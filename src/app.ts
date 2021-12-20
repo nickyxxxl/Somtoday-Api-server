@@ -9,6 +9,8 @@ app.use(express.json())
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', 'https://nickyxxxl.nl')
     res.header('Access-Control-Allow-Headers', 'Access-Control-Allow-Headers, Access-Control-Allow-Origin, Content-Type, Accept')
+    console.log('request received:', req.body);
+    
     next()
 })
 
@@ -65,7 +67,7 @@ app.post('/schedule', async (req, res) => {
     if (typeof request.end_date === 'undefined') {
         const timenow:number = Date.now()
         daystart = new Date(timenow)
-        dayend = new Date(daystart.getFullYear(), daystart.getMonth(), daystart.getDate() + 1)
+        dayend = new Date(daystart.getFullYear(), daystart.getMonth(), daystart.getDate() + 2)
     } else {
         daystart = request.start_date
         dayend = request.end_date
