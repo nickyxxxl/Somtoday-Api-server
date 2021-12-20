@@ -7,7 +7,7 @@ const app: Application = express()
 const port = 3000
 app.use(express.json())
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', 'http://localhost:5000')
+    res.header('Access-Control-Allow-Origin', 'https://nickyxxxl.nl')
     res.header('Access-Control-Allow-Headers', 'Access-Control-Allow-Headers, Access-Control-Allow-Origin, Content-Type, Accept')
     next()
 })
@@ -31,8 +31,8 @@ app.post('/auth', async (req, res) => {
         res.sendStatus(400)
         return
     }
-    const user:Token = await Authenticate(request.schoolUUID, request.username, request.password)
-    res.json(user)
+    const token:Token = await Authenticate(request.schoolUUID, request.username, request.password)
+    res.json(token)
 })
 
 //refresh token
@@ -54,6 +54,10 @@ interface ScheduleQuery {
 }
 app.post('/schedule', async (req, res) => {
     const request:ScheduleQuery = req.body
+    if (request.access_token == null) {
+        res.json('Invalid access token')
+        return
+    }
 
     let daystart:Date
     let dayend:Date
