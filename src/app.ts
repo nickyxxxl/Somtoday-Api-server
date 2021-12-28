@@ -51,8 +51,8 @@ app.post('/refresh', async (req, res) => {
 interface ScheduleQuery {
     access_token: string,
     api_url: string,
-    start_date: Date,
-    end_date?: Date
+    start_date: string,
+    end_date?: string
 }
 app.post('/schedule', async (req, res) => {
     const request:ScheduleQuery = req.body
@@ -69,13 +69,19 @@ app.post('/schedule', async (req, res) => {
         daystart = new Date(timenow)
         dayend = new Date(daystart.getFullYear(), daystart.getMonth(), daystart.getDate() + 2)
     } else {
-        daystart = request.start_date
-        dayend = request.end_date
+        daystart = new Date(request.start_date)
+        dayend = new Date(request.end_date)
     }
 
-    const schedule = await GetSchedule(request.access_token, daystart, dayend, request.api_url)
+    let response
+    try {
+        response = await GetSchedule(request.access_token, daystart, dayend, request.api_url)
+    } catch (error) {        
+        response = {error: 'Unauthorized', message: error}
+    }
+    
 
-    res.json(schedule);
+    res.json(response);
 });
 
 
@@ -97,3 +103,20 @@ app.post('/', (req, res) => {
 
 //start server
 app.listen(port, () => console.log(`Api listening on port ${port}!`))
+
+//exit conditions
+process
+  .on('SIGTERM', shutdown('SIGTERM'))
+  .on('SIGINT', shutdown('SIGINT'))
+  .on('uncaughtException', shutdown('uncaughtException'));
+
+function shutdown(signal:string) {
+  return (err:any) => {
+    console.log(`${signal}...`);
+    if (err) console.error(err.stack || err);
+    setTimeout(() => {
+        console.log('...waited 5s, exiting.');
+        process.exit(err ? 1 : 0);
+      }, 3000).unref();
+  };
+}

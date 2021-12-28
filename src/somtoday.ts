@@ -13,8 +13,11 @@ interface Lesson {
     title: string,
     start_date: Date,
     end_date: Date,
-    start_hour: number,
-    end_hour: number
+    lesson_hour: number
+}
+interface Day {
+    date: Date,
+    lessons: Lesson[]
 }
 
 //get access token
@@ -89,21 +92,28 @@ export async function GetSchedule(access_token:string, start_date:Date, end_date
 
     const response = await axios.get(`${api_url}/rest/v1/afspraken?${body.sort}&${body.begindatum}&${body.einddatum}`,{
         headers: { Authorization: `Bearer ${access_token}`, 'Accept': "application/json" }
-    });
+    }).catch((err) => { console.log(err); return err});
+
+    if (response.isAxiosError && response.status == 401) {
+        throw new Error("Not logged in or session expired");
+    }
+    if (response.isAxiosError) {
+        throw new Error("undefined error");
+    }
     
     //remove unneeded information
     const array = response.data.items
     const result:Lesson[] = []
-    array.forEach((element: { locatie: any; beginDatumTijd: any; eindDatumTijd: any; beginLesuur: any; eindLesuur: any; titel: any; }) => {
+    array.forEach((element: { locatie: any; beginDatumTijd: any; eindDatumTijd: any; beginLesuur: any; titel: any; }) => {
         result.push({
             location: element.locatie,
             start_date: element.beginDatumTijd,
             end_date: element.eindDatumTijd,
-            start_hour: element.beginLesuur,
-            end_hour: element.eindLesuur,
+            lesson_hour: element.beginLesuur,
             title: element.titel
         })
     });
+    
 
     return result;
 }

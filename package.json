@@ -8,7 +8,8 @@
     "build": "tsc -p .",
     "test": "jest",
     "deploy": "",
-    "temp": "pkg -t node14-linuxstatic-arm64 -C Gzip dist/app.js -o public/api-server"
+    "pkg": "yarn build && pkg -t node14-linuxstatic -C Gzip dist/app.js -o public/api-server",
+    "docker": "yarn build && docker build . -t api-server"
   },
   "dependencies": {
     "axios": "^0.24.0",
