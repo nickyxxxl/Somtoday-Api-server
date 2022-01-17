@@ -1,6 +1,8 @@
 import express, { Application, Request, Response } from "express"
 import somtoday from "somtoday.js"; //alleen nodig voor searchOrganisation, kan herschreven worden om deze dependency weg te halen
 import { Authenticate, RefreshToken, GetSchedule } from "./somtoday"
+import { addDays, getMonday } from "./utility"
+import ical from "ical-generator";
 
 //express init
 const app: Application = express()
@@ -14,7 +16,6 @@ app.use((req, res, next) => {
     next()
 })
 
-//login
 interface AuthBody {
     schoolUUID: string,
     username: string,
@@ -26,6 +27,14 @@ interface Token {
     api_url: string,
     expires_in: number
 }
+interface Lesson { 
+    location: string,
+    title: string,
+    start_date: Date,
+    end_date: Date,
+    lesson_hour: number
+}
+//login
 app.post('/auth', async (req, res) => {
     const request: AuthBody = req.body
     //if bad request
@@ -84,6 +93,19 @@ app.post('/schedule', async (req, res) => {
     res.json(response);
 });
 
+app.post('/ical', async (req, res) => {    
+    const token = req.body.access_token
+    const api_url = req.body.api_url
+  
+    //this week
+    const startdate = new Date(getMonday(new Date(Date.now())))
+    const enddate = addDays(startdate, 6)
+  
+    const somschedule = await GetSchedule(token, startdate, enddate, api_url)
+    const icalinfo = SomToIcal(somschedule)
+  
+    res.send(icalinfo)
+})
 
 //schools
 app.get('/schools', async (req: Request, res: Response) => {
@@ -120,3 +142,18 @@ function shutdown(signal:string) {
       }, 3000).unref();
   };
 }
+
+//utility
+function SomToIcal(somSchedule:Lesson[]) {
+    const calendar = ical({name: 'Somtoday import'})
+    somSchedule.forEach((lesson,index) => {
+      console.log(index)
+      calendar.createEvent({
+        start: lesson.start_date,
+        end: lesson.end_date,
+        summary: lesson.title,
+        location: lesson.location
+      })
+    })
+    return calendar.toString()
+  }
