@@ -10,9 +10,8 @@ const port = 3000
 app.use(express.json())
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', 'https://nickyxxxl.nl')
-    res.header('Access-Control-Allow-Headers', 'Access-Control-Allow-Headers, Access-Control-Allow-Origin, Content-Type, Accept')
-    console.log('request received:', req.body);
-    
+    res.header('Access-Control-Allow-Headers', 'Access-Control-Allow-Headers, Access-Control-Allow-Origin, Content-Type, Accept')    
+    console.log(`Request received at ${Date.now().toString()}} from ${req.ip}`)
     next()
 })
 
@@ -89,7 +88,6 @@ app.post('/schedule', async (req, res) => {
         response = {error: 'Unauthorized', message: error}
     }
     
-
     res.json(response);
 });
 
