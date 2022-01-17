@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "license": "GPL-3.0",
   "scripts": {
-    "start": "node dist/app.js",
+    "start": "yarn build && node dist/app.js",
     "dev": "nodemon src/app.ts",
     "build": "tsc -p .",
     "test": "jest",
